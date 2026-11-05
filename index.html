@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>heytoasty — demo</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3rem 1rem;
+    }
+
+    h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+    p.sub { margin: 0 0 2rem; color: #64748b; }
+
+    .panel {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      width: 100%;
+      max-width: 560px;
+      margin-bottom: 1rem;
+      box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+    }
+
+    .panel h2 { margin: 0 0 1rem; font-size: 1rem; }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    button {
+      font: inherit;
+      font-size: 0.875rem;
+      padding: 0.5rem 0.875rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+      background: #fff;
+      cursor: pointer;
+    }
+
+    button:hover { background: #f1f5f9; }
+    button.primary { background: #0284c7; border-color: #0284c7; color: #fff; }
+    button.primary:hover { background: #0369a1; }
+
+    select, input[type="text"], input[type="number"] {
+      font: inherit;
+      font-size: 0.875rem;
+      padding: 0.5rem;
+      border-radius: 0.5rem;
+      border: 1px solid #cbd5e1;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: #475569; }
+    .field input, .field select { color: #0f172a; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .full { grid-column: 1 / -1; }
+
+    .log {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.75rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      min-height: 5rem;
+      max-height: 10rem;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      margin: 0;
+    }
+
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.8em; }
+  </style>
+</head>
+<body>
+  <h1>🍞 heytoasty</h1>
+  <p class="sub">Interactive demo — every control fires a real toast.</p>
+
+  <!-- Types -->
+  <section class="panel">
+    <h2>Types</h2>
+    <div class="row">
+      <button data-type="success">success 🎉</button>
+      <button data-type="error">error 🙈</button>
+      <button data-type="warning">warning ⚠️</button>
+      <button data-type="info">info ℹ️</button>
+      <button id="showAll" class="primary">Show all four</button>
+    </div>
+  </section>
+
+  <!-- Custom toast -->
+  <section class="panel">
+    <h2>Custom toast</h2>
+    <div class="grid">
+      <label class="field full">Message
+        <input id="msg" type="text" value="Hello from the demo!" />
+      </label>
+      <label class="field">Type
+        <select id="type">
+          <option value="success">success</option>
+          <option value="error">error</option>
+          <option value="warning">warning</option>
+          <option value="info">info</option>
+        </select>
+      </label>
+      <label class="field">Position
+        <select id="position">
+          <option value="bottom-right" selected>bottom-right</option>
+          <option value="bottom-left">bottom-left</option>
+          <option value="top-right">top-right</option>
+          <option value="top-left">top-left</option>
+          <option value="top-center">top-center</option>
+          <option value="bottom-center">bottom-center</option>
+        </select>
+      </label>
+      <label class="field">Duration (ms)
+        <input id="duration" type="number" value="4000" min="0" step="500" />
+      </label>
+      <label class="field">Icon
+        <input id="icon" type="text" placeholder="per-type default" />
+      </label>
+      <label class="field">Title (tooltip)
+        <input id="title" type="text" placeholder="optional" />
+      </label>
+      <label class="field">
+        Dismissible
+        <select id="dismissible">
+          <option value="true" selected>true</option>
+          <option value="false">false</option>
+        </select>
+      </label>
+      <div class="field" style="justify-content:flex-end">
+        <button id="fire" class="primary">Fire toast</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Global controls -->
+  <section class="panel">
+    <h2>Global controls</h2>
+    <div class="row">
+      <button id="sticky">Sticky (never auto-dismiss)</button>
+      <button id="burst">Burst ×8</button>
+      <button id="dismiss">Dismiss all</button>
+    </div>
+    <div class="row" style="margin-top:0.75rem">
+      <span style="font-size:0.75rem;color:#475569">Default position:</span>
+      <select id="globalPosition">
+        <option value="bottom-right">bottom-right</option>
+        <option value="bottom-left">bottom-left</option>
+        <option value="top-right">top-right</option>
+        <option value="top-left">top-left</option>
+        <option value="top-center">top-center</option>
+        <option value="bottom-center">bottom-center</option>
+      </select>
+      <button id="applyPosition">Apply</button>
+    </div>
+    <div class="row" style="margin-top:0.75rem">
+      <span style="font-size:0.75rem;color:#475569">Global duration (ms):</span>
+      <input id="globalDuration" type="number" value="5000" min="0" step="500" style="width:6rem" />
+      <button id="applyConfigure">Configure</button>
+    </div>
+  </section>
+
+  <!-- Programmatic dismiss -->
+  <section class="panel">
+    <h2>Programmatic dismiss</h2>
+    <div class="row">
+      <button id="spawn">Spawn manual toast</button>
+      <button id="manualDismiss">Dismiss it</button>
+    </div>
+    <p style="font-size:0.75rem;color:#64748b;margin:0.75rem 0 0">
+      Uses the handle returned by <code>toast.show()</code> — <code>handle.dismiss()</code> — while the toast stays sticky.
+    </p>
+  </section>
+
+  <!-- Event log -->
+  <section class="panel">
+    <h2>Event log</h2>
+    <p class="log" id="log">// actions will be logged here</p>
+  </section>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "heytoasty": "./dist/index.js"
+      }
+    }
+  </script>
+
+  <script type="module">
+    import { toast } from 'heytoasty';
+
+    const logEl = document.getElementById('log');
+    let logged = 0;
+    const log = (line) => {
+      if (logged++ === 0) logEl.textContent = '';
+      logEl.textContent += line + '\n';
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    // Types
+    document.querySelectorAll('[data-type]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const type = btn.dataset.type;
+        const messages = {
+          success: 'Saved successfully!',
+          error: 'Something went wrong.',
+          warning: 'Heads up — check this out.',
+          info: 'FYI: new update available.',
+        };
+        toast[type](messages[type]);
+        log(`toast.${type}("${messages[type]}")`);
+      });
+    });
+
+    document.getElementById('showAll').addEventListener('click', () => {
+      toast.success('Saved successfully!');
+      toast.error('Something went wrong.');
+      toast.warning('Heads up — check this out.');
+      toast.info('FYI: new update available.');
+      log('toast.success/error/warning/info × 4');
+    });
+
+    // Custom toast
+    document.getElementById('fire').addEventListener('click', () => {
+      const opts = {
+        type: document.getElementById('type').value,
+        position: document.getElementById('position').value,
+        duration: Number(document.getElementById('duration').value) || 0,
+        dismissible: document.getElementById('dismissible').value === 'true',
+      };
+      const icon = document.getElementById('icon').value.trim();
+      const title = document.getElementById('title').value.trim();
+      if (icon) opts.icon = icon;
+      if (title) opts.title = title;
+      const msg = document.getElementById('msg').value || 'Toast!';
+      toast.show(msg, opts);
+      log(`toast.show("${msg}", ${JSON.stringify(opts)})`);
+    });
+
+    // Global controls
+    document.getElementById('sticky').addEventListener('click', () => {
+      toast.show('I\'ll stick around…', { duration: 0 });
+      log('toast.show("I\'ll stick around…", { duration: 0 })');
+    });
+
+    document.getElementById('burst').addEventListener('click', () => {
+      const types = ['success', 'error', 'warning', 'info'];
+      for (let i = 1; i <= 8; i++) {
+        setTimeout(() => toast[types[i % 4]](`Burst toast #${i} of 8`), i * 150);
+      }
+      log('burst: 8 toasts, staggered 150ms apart');
+    });
+
+    document.getElementById('dismiss').addEventListener('click', () => {
+      toast.dismissAll();
+      log('toast.dismissAll()');
+    });
+
+    document.getElementById('applyPosition').addEventListener('click', () => {
+      const pos = document.getElementById('globalPosition').value;
+      toast.setPosition(pos);
+      log(`toast.setPosition("${pos}")`);
+    });
+
+    document.getElementById('applyConfigure').addEventListener('click', () => {
+      const duration = Number(document.getElementById('globalDuration').value) || 0;
+      toast.configure({ duration });
+      log(`toast.configure({ duration: ${duration} })`);
+    });
+
+    // Programmatic dismiss
+    let manual = null;
+    document.getElementById('spawn').addEventListener('click', () => {
+      manual = toast.show('Manual toast — dismiss me from the button', { duration: 0 });
+      log('const handle = toast.show("Manual toast…", { duration: 0 })');
+    });
+
+    document.getElementById('manualDismiss').addEventListener('click', () => {
+      if (manual) {
+        manual.dismiss();
+        log('handle.dismiss()');
+        manual = null;
+      } else {
+        log('no manual toast to dismiss');
+      }
+    });
+
+    // Welcome toast on load
+    setTimeout(() => toast.info('Welcome! Try the buttons above.'), 300);
+  </script>
+</body>
+</html>
