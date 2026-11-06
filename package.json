@@ -13,8 +13,17 @@
       "require": "./dist/index.cjs"
     }
   },
+  "homepage": "https://heytoasty.sejan.workers.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sejanH/hetoasty-toastr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sejanH/hetoasty-toastr/issues"
+  },
   "files": [
-    "dist"
+    "dist",
+    "heytoasty.jpeg"
   ],
   "sideEffects": false,
   "scripts": {

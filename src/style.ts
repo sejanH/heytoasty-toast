@@ -24,6 +24,8 @@ export const css = `
 .heytoasty-toast {
   --heytoasty-bg: #e2f3cc;
   --heytoasty-fg: #3f6b1f;
+  position: relative;
+  overflow: hidden;
   pointer-events: auto;
   display: flex;
   align-items: center;
@@ -51,8 +53,62 @@ export const css = `
 .heytoasty-toast[data-type="warning"] { --heytoasty-bg: #fff3c4; --heytoasty-fg: #b45909; }
 .heytoasty-toast[data-type="info"]    { --heytoasty-bg: #d5f1fd; --heytoasty-fg: #1784b6; }
 
-.heytoasty-toast__icon { flex: none; font-size: 1.1em; line-height: 1; }
-.heytoasty-toast__message { flex: 1 1 auto; word-break: break-word; }
+.heytoasty-toast__icon { flex: none; font-size: 1.1em; line-height: 1; align-self: flex-start; }
+.heytoasty-toast__icon-ring {
+  flex: none;
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  align-self: flex-start;
+}
+.heytoasty-toast__icon-ring .heytoasty-toast__icon {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 1.1em;
+  line-height: 1;
+  align-self: center;
+  text-align: center;
+}
+.heytoasty-toast__progress-ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  overflow: visible;
+}
+.heytoasty-toast__progress-track {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  opacity: 0.2;
+}
+.heytoasty-toast__progress-circle {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-dasharray: 100.53;
+  stroke-dashoffset: 0;
+  opacity: 0.9;
+}
+.heytoasty-toast__progress-circle.heytoasty-toast__progress--running {
+  animation: heytoasty-ring linear forwards;
+}
+.heytoasty-toast__progress-circle.heytoasty-toast__progress--paused {
+  animation-play-state: paused;
+}
+@keyframes heytoasty-ring {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: 100.53; }
+}
+.heytoasty-toast__body { flex: 1 1 auto; display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+.heytoasty-toast__title { font-size: 0.95em; line-height: 1.3; word-break: break-word; }
+.heytoasty-toast__message { word-break: break-word; font-weight: 500; }
 .heytoasty-toast__close {
   flex: none;
   appearance: none;
@@ -67,7 +123,14 @@ export const css = `
   opacity: 0.7;
 }
 .heytoasty-toast__close:hover { opacity: 1; }
-`;
+/* Legacy bar progress — no longer emitted, kept for backwards-compat */
+.heytoasty-toast__progress { display: none; }
+.heytoasty-toast__progress--running { animation: heytoasty-progress linear forwards; }
+.heytoasty-toast__progress--paused { animation-play-state: paused; }
+@keyframes heytoasty-progress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}`;
 
 let injected = false;
 

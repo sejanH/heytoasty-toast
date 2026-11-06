@@ -56,13 +56,20 @@
     button.primary { background: #0284c7; border-color: #0284c7; color: #fff; }
     button.primary:hover { background: #0369a1; }
 
-    select, input[type="text"], input[type="number"] {
+    select, input[type="text"], input[type="number"], input[type="color"] {
       font: inherit;
       font-size: 0.875rem;
       padding: 0.5rem;
       border-radius: 0.5rem;
       border: 1px solid #cbd5e1;
     }
+    input[type="color"] {
+      padding: 0.125rem;
+      width: 3rem;
+      height: 2.25rem;
+      cursor: pointer;
+    }
+    input[type="checkbox"] { width: auto; }
 
     .field { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.75rem; color: #475569; }
     .field input, .field select { color: #0f172a; }
@@ -135,8 +142,27 @@
       <label class="field">Icon
         <input id="icon" type="text" placeholder="per-type default" />
       </label>
-      <label class="field">Title (tooltip)
+      <label class="field">Title (heading)
         <input id="title" type="text" placeholder="optional" />
+      </label>
+      <label class="field">Background color (bgColor)
+        <input id="bgColor" type="color" value="#e2f3cc" />
+        <label style="flex-direction:row;align-items:center;gap:.25rem;display:flex">
+          <input id="useBgColor" type="checkbox" /> use (type default)
+        </label>
+      </label>
+      <label class="field">Text color (txtColor)
+        <input id="txtColor" type="color" value="#3f6b1f" />
+        <label style="flex-direction:row;align-items:center;gap:.25rem;display:flex">
+          <input id="useTxtColor" type="checkbox" /> use (type default)
+        </label>
+      </label>
+      <label class="field">
+        Progress bar
+        <select id="progress">
+          <option value="true" selected>true</option>
+          <option value="false">false</option>
+        </select>
       </label>
       <label class="field">
         Dismissible
@@ -190,6 +216,19 @@
     </p>
   </section>
 
+  <!-- Callbacks & colors -->
+  <section class="panel">
+    <h2>Callbacks &amp; colors</h2>
+    <div class="row">
+      <button id="withCallbacks">Fire with onOpen/onClose</button>
+      <button id="darkToast">Dark mode (bgColor/txtColor)</button>
+      <button id="clearColors">Clear colors</button>
+    </div>
+    <p style="font-size:0.75rem;color:#64748b;margin:0.75rem 0 0">
+      <code>onOpen</code> fires when the toast becomes visible; <code>onClose(reason)</code> fires with <code>"timeout"</code> or <code>"manual"</code>.
+    </p>
+  </section>
+
   <!-- Event log -->
   <section class="panel">
     <h2>Event log</h2>
@@ -203,6 +242,10 @@
       }
     }
   </script>
+  <!-- The demo requires a built dist/. Build with: NODE_ENV=development npm install && npm run build
+       Then serve with: npx serve . (or python3 -m http.server 8765) — dist/ must be served with
+       Content-Type: text/javascript, which python's http.server and npx serve do automatically.
+       Opening index.html via file:// will fail because ES module imports from file:// are blocked. -->
 
   <script type="module">
     import { toast } from 'heytoasty';
@@ -238,6 +281,21 @@
       log('toast.success/error/warning/info × 4');
     });
 
+    const TYPE_COLORS = {
+      success: { bgColor: '#e2f3cc', txtColor: '#3f6b1f' },
+      error: { bgColor: '#ffe1d6', txtColor: '#b02d0f' },
+      warning: { bgColor: '#fff3c4', txtColor: '#b45909' },
+      info: { bgColor: '#d5f1fd', txtColor: '#1784b6' },
+    };
+
+    const syncColorsFromType = () => {
+      const type = document.getElementById('type').value;
+      const c = TYPE_COLORS[type];
+      document.getElementById('bgColor').value = c.bgColor;
+      document.getElementById('txtColor').value = c.txtColor;
+    };
+    document.getElementById('type').addEventListener('change', syncColorsFromType);
+
     // Custom toast
     document.getElementById('fire').addEventListener('click', () => {
       const opts = {
@@ -245,12 +303,20 @@
         position: document.getElementById('position').value,
         duration: Number(document.getElementById('duration').value) || 0,
         dismissible: document.getElementById('dismissible').value === 'true',
+        progress: document.getElementById('progress').value === 'true',
       };
       const icon = document.getElementById('icon').value.trim();
       const title = document.getElementById('title').value.trim();
       if (icon) opts.icon = icon;
       if (title) opts.title = title;
+      // Unticked → type default applies (nothing passed).
+      // Ticked → picker value wins (auto-synced from type, user can tweak).
+      if (document.getElementById('useBgColor').checked) opts.bgColor = document.getElementById('bgColor').value;
+      if (document.getElementById('useTxtColor').checked) opts.txtColor = document.getElementById('txtColor').value;
+      opts.onOpen = () => log('onOpen → toast became visible');
+      opts.onClose = (reason) => log(`onClose → reason: ${reason}`);
       const msg = document.getElementById('msg').value || 'Toast!';
+      const titleVal = title || undefined;
       toast.show(msg, opts);
       log(`toast.show("${msg}", ${JSON.stringify(opts)})`);
     });
@@ -289,7 +355,7 @@
     // Programmatic dismiss
     let manual = null;
     document.getElementById('spawn').addEventListener('click', () => {
-      manual = toast.show('Manual toast — dismiss me from the button', { duration: 0 });
+      manual = toast.show('Manual toast — dismiss me from the button', { duration: 0, onClose: (reason) => log(`manual toast closed: ${reason}`) });
       log('const handle = toast.show("Manual toast…", { duration: 0 })');
     });
 
@@ -301,6 +367,28 @@
       } else {
         log('no manual toast to dismiss');
       }
+    });
+
+    // Callbacks & colors
+    document.getElementById('withCallbacks').addEventListener('click', () => {
+      toast.show('Progress is on — hover to pause', 'Callbacks demo', {
+        type: 'info',
+        duration: 5000,
+        progress: true,
+        onOpen: () => log('onOpen → toast became visible'),
+        onClose: (reason) => log(`onClose → reason: ${reason}`),
+      });
+      log('toast.show(..., { progress: true, onOpen, onClose })');
+    });
+
+    document.getElementById('darkToast').addEventListener('click', () => {
+      toast.success('Dark mode toast', 'Custom colors', { bgColor: '#0f172a', txtColor: '#e2e8f0', progress: true, duration: 5000 });
+      log('toast.success(..., { bgColor: "#0f172a", txtColor: "#e2e8f0" })');
+    });
+
+    document.getElementById('clearColors').addEventListener('click', () => {
+      toast.success('Default colors restored', { duration: 4000 });
+      log('back to per-type defaults (no bgColor/txtColor)');
     });
 
     // Welcome toast on load
